@@ -895,6 +895,7 @@ def ensure_hermes_home():
         for subdir in (
             "cron", "sessions", "logs", "logs/curator", "memories",
             "pairing", "hooks", "image_cache", "audio_cache", "skills",
+            "workspace",
         ):
             d = home / subdir
             d.mkdir(parents=True, exist_ok=True)
@@ -911,7 +912,7 @@ def _ensure_hermes_home_managed(home: Path):
             f"HERMES_HOME {home} does not exist. "
             "Run 'sudo nixos-rebuild switch' first."
         )
-    for subdir in ("cron", "sessions", "logs", "memories"):
+    for subdir in ("cron", "sessions", "logs", "memories", "workspace"):
         d = home / subdir
         if not d.is_dir():
             raise RuntimeError(
@@ -2303,6 +2304,17 @@ DEFAULT_CONFIG = {
     # so child agents can run on a different (cheaper/faster) provider and model.
     # Uses the same runtime provider resolution as CLI/gateway startup, so all
     # configured providers (OpenRouter, Nous, Z.ai, Kimi, etc.) are supported.
+    # Workspace — multi-tenant organization model for business/team use.
+    # When enabled, tools are gated by workspace role; audit logs are written
+    # to $HERMES_HOME/workspace/workspace.db. The workspace plugin auto-creates
+    # the database on first use.
+    "workspace": {
+        "enabled": False,
+        # RBAC — when enabled, every tool call is checked against the active
+        # workspace role. With no active workspace, all tools are allowed.
+        "rbac_enabled": False,
+    },
+
     "delegation": {
         "model": "",       # e.g. "google/gemini-3-flash-preview" (empty = inherit parent model)
         "provider": "",    # e.g. "openrouter" (empty = inherit parent provider + credentials)
